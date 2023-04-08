@@ -2,9 +2,11 @@
 #include <fstream>
 #include <sstream>
 using namespace std;
-ifstream cadchar(ifstream &);
+void cadchar(ifstream&);
 void bin(int,ofstream&);
 int dbin(int);
+void cpchar(ifstream&,int);
+void cschar(ifstream&,int);
 
 int main()
 {
@@ -21,17 +23,33 @@ int main()
         cout<<"Ingrese un metodo valido: ";
         cin>>M;
     }
+    cout<<"Ingrese la semilla de codificacion mayor o igual a 3: ";
+    cin>>N;
+    while(N<3){
+        cout<<"Ingrese una semilla valida: ";
+        cin>>N;
+    }
     ifstream archch;
     archch.open("Archivo.txt");
 
+
     if (C==1){
         cadchar(archch);
+        ifstream archb;
+        archb.open("Bin.txt");
+        if(M==1){
+            cpchar(archb,N);
+        }
+        else if(M==2){
+            cschar(archb,N);
+        }
+        archb.close();
     }
     archch.close();
 
 }
 
-ifstream cadchar(ifstream &arch)
+void cadchar(ifstream& arch)
 {
     ofstream arcb;
     arcb.open("bin.txt");
@@ -116,4 +134,129 @@ int dbin (int b)
         return 0;
     }
 
+}
+
+void cpchar(ifstream& archb, int b)
+{
+    ofstream arcs;
+    arcs.open("Solucion.txt");
+    int inte=0,inted=0,contc=0, contu=0, cont=2,contca=0,contua=0, contf=1;
+    char *array=new char[100000];
+    while(archb.good()){
+        archb.getline(array,10000);
+        for (int i=0;i<=b-1;i++){
+            if (array[i]=='0'){
+                contc+=1;
+                array[i]='1';
+            }
+            else if(array[i]=='1'){
+                contu+=1;
+                array[i]='0';
+            }
+        }
+        inte=b;
+        inted=(b*cont)-1;
+        while(array[inte]!='\0'){
+            while(inte<=inted){
+                if(contc==contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        array[inte]='1';
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        array[inte]='0';
+                    }
+                }
+                else if(contc>contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        if (contf==2){
+                            array[inte]='1';
+                            contf=0;
+                        }
+                        contf+=1;
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        if (contf==2){
+                           array[inte]='0';
+                           contf=0;
+                        }
+                        contf+=1;
+                    }
+                }
+                else if(contc<contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        if (contf==3){
+                            array[inte]='1';
+                            contf=0;
+                        }
+                        contf+=1;
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        if (contf==3){
+                           array[inte]='0';
+                           contf=0;
+                        }
+                        contf+=1;
+                    }
+                }
+                inte+=1;
+            }
+            contc=contca;
+            contu=contua;
+            contf=1;
+            contca=0;
+            contua=0;
+            inte=inted+1;
+            cont+=1;
+            inted=(b*cont)-1;
+        }
+    arcs<<array;
+    arcs<<'\n';
+    }
+    delete [] array;
+    arcs.close();
+}
+
+void cschar(ifstream& archb,int b)
+{
+    ofstream arcs;
+    arcs.open("Solucion.txt");
+    char *array=new char[100000];
+    int inte=0,intes=b-1,cont=2;
+    char aux='\0',aux2='\0';
+    while(archb.good()){
+        archb.getline(array,10000);
+        while(array[inte]!='\0'){
+            aux=array[inte];
+            while(inte<=intes){
+                if(inte<intes){
+                    if(array[inte+1]=='0' || array[inte+1]=='1'){
+                        aux2=array[inte+1];
+                        array[inte+1]=aux;
+                    }
+                }
+                else if(inte==intes){
+                    if(array[inte-intes]=='0' || array[inte-intes]=='1'){
+                        array[inte-(b-1)]=aux;
+                    }
+                }
+                inte+=1;
+                aux=aux2;
+            }
+            intes=(b*cont)-1;
+            cont+=1;
+        }
+        arcs<<array;
+        arcs<<'\n';
+        inte=0;
+        intes=b-1;
+        cont=2;
+    }
+    delete [] array;
+    arcs.close();
 }
