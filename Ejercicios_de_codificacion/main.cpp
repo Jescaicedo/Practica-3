@@ -1,12 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 using namespace std;
 void cadchar(ifstream&);
 void bin(int,ofstream&);
 int dbin(int);
 void cpchar(ifstream&,int);
 void cschar(ifstream&,int);
+void stringchar(ifstream&);
+void spchar(ifstream&, int);
+void sschar(ifstream&,int);
 
 int main()
 {
@@ -31,21 +35,30 @@ int main()
     }
     ifstream archch;
     archch.open("Archivo.txt");
-
+    ifstream archb;
+    archb.open("Bin.txt");
 
     if (C==1){
         cadchar(archch);
-        ifstream archb;
-        archb.open("Bin.txt");
         if(M==1){
             cpchar(archb,N);
         }
         else if(M==2){
             cschar(archb,N);
         }
-        archb.close();
+
+    }
+    else if(C==2){
+        stringchar(archch);
+        if(M==1){
+            spchar(archb,N);
+        }
+        else if(M==2){
+            sschar(archb,N);
+        }
     }
     archch.close();
+    archb.close();
 
 }
 
@@ -53,11 +66,11 @@ void cadchar(ifstream& arch)
 {
     ofstream arcb;
     arcb.open("bin.txt");
-    char array[256];
+    char array[1000];
     int num=0;
     char carac=1;
     while(arch.good()){
-        arch.getline(array,256);
+        arch.getline(array,1000);
         carac=array[0];
         for(int i=1;carac!='\0';i++){
             num=carac;
@@ -258,5 +271,149 @@ void cschar(ifstream& archb,int b)
         cont=2;
     }
     delete [] array;
+    arcs.close();
+}
+
+void stringchar(ifstream& arch)
+{
+    ofstream arcb;
+    arcb.open("bin.txt");
+    string linea;
+    int num=0;
+    char carac=1;
+    while(arch.good()){
+        getline(arch,linea);
+        carac=linea[0];
+        for(int i=1;carac!='\0';i++){
+            num=carac;
+            bin(num,arcb);
+            carac=linea[i];
+        }
+        arcb<<'\n';
+
+    }
+    arcb.close();
+}
+
+void spchar(ifstream& archb, int b)
+{
+    ofstream arcs;
+    arcs.open("Solucion.txt");
+    int inte=0,inted=0,contc=0, contu=0, cont=2,contca=0,contua=0, contf=1;
+    string array;
+    while(archb.good()){
+        getline(archb,array);
+        for (int i=0;i<=b-1;i++){
+            if (array[i]=='0'){
+                contc+=1;
+                array[i]='1';
+            }
+            else if(array[i]=='1'){
+                contu+=1;
+                array[i]='0';
+            }
+        }
+        inte=b;
+        inted=(b*cont)-1;
+        while(array[inte]!='\0'){
+            while(inte<=inted){
+                if(contc==contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        array[inte]='1';
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        array[inte]='0';
+                    }
+                }
+                else if(contc>contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        if (contf==2){
+                            array[inte]='1';
+                            contf=0;
+                        }
+                        contf+=1;
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        if (contf==2){
+                           array[inte]='0';
+                           contf=0;
+                        }
+                        contf+=1;
+                    }
+                }
+                else if(contc<contu){
+                    if (array[inte]=='0'){
+                        contca+=1;
+                        if (contf==3){
+                            array[inte]='1';
+                            contf=0;
+                        }
+                        contf+=1;
+                    }
+                    else if(array[inte]=='1'){
+                        contua+=1;
+                        if (contf==3){
+                           array[inte]='0';
+                           contf=0;
+                        }
+                        contf+=1;
+                    }
+                }
+                inte+=1;
+            }
+            contc=contca;
+            contu=contua;
+            contf=1;
+            contca=0;
+            contua=0;
+            inte=inted+1;
+            cont+=1;
+            inted=(b*cont)-1;
+        }
+    arcs<<array;
+    arcs<<'\n';
+    }
+    arcs.close();
+}
+
+void sschar(ifstream& archb,int b)
+{
+    ofstream arcs;
+    arcs.open("Solucion.txt");
+    string array;
+    int inte=0,intes=b-1,cont=2;
+    char aux='\0',aux2='\0';
+    while(archb.good()){
+        getline(archb,array);
+        while(array[inte]!='\0'){
+            aux=array[inte];
+            while(inte<=intes){
+                if(inte<intes){
+                    if(array[inte+1]=='0' || array[inte+1]=='1'){
+                        aux2=array[inte+1];
+                        array[inte+1]=aux;
+                    }
+                }
+                else if(inte==intes){
+                    if(array[inte-intes]=='0' || array[inte-intes]=='1'){
+                        array[inte-(b-1)]=aux;
+                    }
+                }
+                inte+=1;
+                aux=aux2;
+            }
+            intes=(b*cont)-1;
+            cont+=1;
+        }
+        arcs<<array;
+        arcs<<'\n';
+        inte=0;
+        intes=b-1;
+        cont=2;
+    }
     arcs.close();
 }
