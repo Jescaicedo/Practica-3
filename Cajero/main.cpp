@@ -9,6 +9,8 @@ string bin (int);
 bool sschar(string);
 bool eusuario(string);
 void añadirusuario(string,string,string);
+void iniciarsesion(string,bool* ,int*,string*);
+void cambiodinero(string,int,string);
 
 int main()
 {
@@ -29,14 +31,13 @@ int main()
             if (correc){
                 cout<<"Acceso habilitado"<<endl;
                 while(correc){
-                    int N=0;
                     cout<<"Ingrese 1 para registrar usuarios o 2 para regresar: ";
-                    cin>>N;
-                    while(N<1 || N>2){
+                    cin>>U;
+                    while(U<1 || U>2){
                         cout<<"Ingrese un movimiento valido: ";
-                        cin>>N;
+                        cin>>U;
                     }
-                    if(N==1){
+                    if(U==1){
                         string ced, clav, ssaldo;
                         int saldo=0;
                         cout<<"Ingrese su cedula: ";
@@ -67,6 +68,55 @@ int main()
                 cout<<"Acceso denegado"<<endl;
             }
 
+        }
+        else if(U==2){
+            string cedula, contra;
+            cout<<"Ingrese su cedula: ";
+            cin>>cedula;
+            bool iniciado=false;
+            int dinero=0;
+            iniciarsesion(cedula,&iniciado,&dinero,&contra);
+            while(iniciado){
+                cout<<"Ingrese 1 para ver saldo, 2 para retirar dinero o 3 para regresar: ";
+                cin>>U;
+                while(U<1 || U>3){
+                    cout<<"Ingrese un movimiento valido: ";
+                    cin>>U;
+                }
+                if(U==1){
+                    if (dinero>=1000){
+                        dinero-=1000;
+                    }
+                    cout<<"Su saldo es de "<<dinero<<endl;
+                }
+                else if(U==2){
+                    if (dinero>=1000){
+                        dinero-=1000;
+                    }
+                    int retiro=0;
+                    cout<<"Ingrese el dinero que desea retirar mayor o igual a 1000: ";
+                    cin>>retiro;
+                    while (retiro<1000 || retiro>dinero){
+                        if(retiro<1000){
+                            cout<<"El retiro tiene que ser mayor a 1000"<<endl;
+                        }
+                        else{
+                            cout<<"El retiro deseado supera el saldo de la cuenta"<<endl;
+                        }
+                        cout<<"Ingrese un retiro valido: ";
+                        cin>>retiro;
+                    }
+                    dinero-=retiro;
+                    cout<<"El dinero ha sido depositado en bandeja"<<endl;
+                }
+                else{
+                    iniciado=false;
+                    cambiodinero(cedula,dinero,contra);
+                }
+            }
+        }
+        else{
+            encendido=false;
         }
 
     }
@@ -211,6 +261,8 @@ bool eusuario(string usuario)
         if (usuarios==usuario){
             return false;
         }
+        cont=0;
+        usuarios="";
     }
     return true;
 }
@@ -223,8 +275,97 @@ void añadirusuario(string cedula, string clave, string saldo)
     cedula+=clave;
     cedula+=",";
     cedula+=saldo;
+    cedula+=".";
     archi<<cedula;
     archi<<'\n';
     archi.close();
 
+}
+
+void iniciarsesion(string usuario, bool* manejo, int* saldo, string* clave)
+{
+    ifstream arch;
+    arch.open("Basedatos.txt");
+    string linea, usuarios, clavev,dinero;
+    int cont=0;
+    bool encontrado=false;
+    while(arch.good()){
+        getline(arch,linea);
+        while(linea[cont]!='\0' && linea[cont]!=':'){
+            usuarios.push_back(linea[cont]);
+            cont+=1;
+        }
+        if (usuarios==usuario){
+            cout<<"Ingrese su clave: ";
+            cin>>*clave;
+            cont+=1;
+            encontrado=true;
+            while(linea[cont]!='\0' && linea[cont]!=','){
+                clavev.push_back(linea[cont]);
+                cont+=1;
+            }
+            if(*clave==clavev){
+                cout<<"Acceso validado"<<endl;
+                *manejo=true;
+                cont+=1;
+
+                while(linea[cont]!='\0' && linea[cont]!='.'){
+                    dinero.push_back(linea[cont]);
+                    cont+=1;
+                }
+                *saldo=stoi(dinero);
+            }
+            else{
+                cout<<"Clave incorrecta"<<endl;
+                *manejo=false;
+            }
+        }
+        cont=0;
+        usuarios="";
+    }
+    if(!encontrado){
+        cout<<"El usuario no fue encontrado"<<endl;
+        *manejo=false;
+    }
+
+}
+
+void cambiodinero(string cedula,int saldo,string clave)
+{
+    string lineanueva, dinero;
+    lineanueva+=cedula;
+    lineanueva+=":";
+    lineanueva+=clave;
+    dinero=to_string(saldo);
+    lineanueva+=",";
+    lineanueva+=dinero;
+    lineanueva+=".\n";
+    ifstream archivo;
+    ofstream archc;
+    archc.open("auxbase.txt");
+    archivo.open("Basedatos.txt");
+    string linea;
+    while (archivo.good()) {
+        getline(archivo,linea);
+        if (linea.find(cedula) != string::npos) {
+            linea = lineanueva;
+        }
+        archc<<linea;
+        archc<<'\n';
+    }
+    archivo.close();
+    archc.close();
+    ifstream archc1;
+    ofstream archivo1;
+    archc1.open("auxbase.txt");
+    archivo1.open("Basedatos.txt");
+    while (archc1.good()) {
+        getline(archc1,linea);
+        archivo1<<linea;
+        archivo1<<'\n';
+    }
+    archivo1.close();
+    archc1.close();
+    ofstream archivo2("auxbase.txt", ios::out | ios::trunc);
+    archivo2.close();
 }
