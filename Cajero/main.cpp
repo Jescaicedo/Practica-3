@@ -3,14 +3,16 @@
 #include <sstream>
 #include <string>
 using namespace std;
-string stringchar();
+string stringchar(string);
 int dbin (int);
 string bin (int);
-bool sschar(string);
+string sschar(string);
 bool eusuario(string);
+bool claveadmin(string);
 void añadirusuario(string,string,string);
 void iniciarsesion(string,bool* ,int*,string*);
 void cambiodinero(string,int,string);
+void transaccionescod(int,string, string);
 
 int main()
 {
@@ -26,8 +28,12 @@ int main()
             cin>>U;
         }
         if (U==1){
-            binario=stringchar();
-            bool correc=sschar(binario);
+            string admin;
+            cout<<"Ingrese la clave de administrador: ";
+            cin>>admin;
+            binario=stringchar(admin);
+            binario=sschar(binario);
+            bool correc=claveadmin(binario);
             if (correc){
                 cout<<"Acceso habilitado"<<endl;
                 while(correc){
@@ -87,6 +93,7 @@ int main()
                     if (dinero>=1000){
                         dinero-=1000;
                     }
+                    transaccionescod(1000,cedula,"paga");
                     cout<<"Su saldo es de "<<dinero<<endl;
                 }
                 else if(U==2){
@@ -108,6 +115,7 @@ int main()
                     }
                     dinero-=retiro;
                     cout<<"El dinero ha sido depositado en bandeja"<<endl;
+                    transaccionescod(retiro,cedula,"retira");
                 }
                 else{
                     iniciado=false;
@@ -124,11 +132,9 @@ int main()
 
 }
 
-string stringchar()
+string stringchar(string linea)
 {
-    string linea, binario, binf;
-    cout<<"Ingrese la clave de administrador: ";
-    cin>>linea;
+    string binario, binf;
     int num=0;
     char carac=1;
     carac=linea[0];
@@ -208,15 +214,11 @@ int dbin (int b)
     }
 
 }
-bool sschar(string binario)
+string sschar(string binario)
 {
-    ifstream arcs;
-    arcs.open("Sudo.txt");
-    string clave;
     int b=4;
     int inte=0,intes=b-1,cont=2;
     char aux='\0',aux2='\0';
-    getline(arcs,clave);
     while(binario[inte]!='\0'){
         aux=binario[inte];
         while(inte<=intes){
@@ -237,6 +239,15 @@ bool sschar(string binario)
         intes=(b*cont)-1;
         cont+=1;
     }
+    return binario;
+}
+
+bool claveadmin(string binario)
+{
+    ifstream arcs;
+    arcs.open("Sudo.txt");
+    string clave;
+    getline(arcs,clave);
     arcs.close();
     if (clave==binario){
         return true;
@@ -277,7 +288,7 @@ void añadirusuario(string cedula, string clave, string saldo)
     cedula+=saldo;
     cedula+=".";
     archi<<cedula;
-    archi<<'\n';
+    archi<<"\n";
     archi.close();
 
 }
@@ -339,7 +350,7 @@ void cambiodinero(string cedula,int saldo,string clave)
     dinero=to_string(saldo);
     lineanueva+=",";
     lineanueva+=dinero;
-    lineanueva+=".\n";
+    lineanueva+=".";
     ifstream archivo;
     ofstream archc;
     archc.open("auxbase.txt");
@@ -351,7 +362,7 @@ void cambiodinero(string cedula,int saldo,string clave)
             linea = lineanueva;
         }
         archc<<linea;
-        archc<<'\n';
+        archc<<"\n";
     }
     archivo.close();
     archc.close();
@@ -362,10 +373,26 @@ void cambiodinero(string cedula,int saldo,string clave)
     while (archc1.good()) {
         getline(archc1,linea);
         archivo1<<linea;
-        archivo1<<'\n';
+        archivo1<<"\n";
     }
     archivo1.close();
     archc1.close();
     ofstream archivo2("auxbase.txt", ios::out | ios::trunc);
     archivo2.close();
+}
+
+void transaccionescod(int valor,string cedula, string accion)
+{
+    string dinero;
+    dinero=to_string(valor);
+    cedula+=accion;
+    cedula+=dinero;
+    cedula=stringchar(cedula);
+    cedula=sschar(cedula);
+    ofstream arch;
+    arch.open("historialtransacciones.txt", ios::app);
+    arch<<cedula;
+    arch<<"\n";
+    arch.close();
+
 }
